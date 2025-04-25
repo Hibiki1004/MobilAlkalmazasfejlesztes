@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Online rajz tanfolyam</string>
+    <string name="login">Bejelentkezés</string>
+    <string name="password">Jelszó</string>
+    <string name="username">Név</string>
+    <string name="register">Regisztráció</string>
+    <string name="passwordAgain">Jelszó újra</string>
+    <string name="email">Email cím</string>
+    <string name="no">Mégse</string>
+</resources>
