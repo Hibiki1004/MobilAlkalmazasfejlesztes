@@ -9,12 +9,20 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
 
 public class RegisterActivity extends AppCompatActivity {
     private static final String LOG_TAG = "RegisterTag";
@@ -25,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
     EditText passwordAgain;
 
     private SharedPreferences preferences;
+    private FirebaseAuth mAuth;
 
 
     @Override
@@ -69,6 +78,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         name.setText(preferences.getString("name", ""));
         password.setText(preferences.getString("password", ""));
+
+        mAuth = FirebaseAuth.getInstance();
 
         Log.i(LOG_TAG,"onCreate");
     }
@@ -120,10 +131,20 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     public void goToLogin(View view) {
-        getWindow().getDecorView().findViewById(android.R.id.content).findViewById(R.id.name);
+        Intent intent = new Intent(this,LoginActivity.class);
+
+        intent.putExtra("SECRET_KEY",345);
+
+        startActivity(intent);
         finish();
     }
+    public void goAndMain(View view) {
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
+        finish();
 
+        Log.i(LOG_TAG, "goToMain");
+    }
     public void register(View view) {
         String nameStr = name.getText().toString();
         String emailStr = email.getText().toString();
@@ -132,8 +153,20 @@ public class RegisterActivity extends AppCompatActivity {
 
         Log.i(LOG_TAG, "Registered as: name: '" + nameStr + "' , email: '" + emailStr + "' , password: '" + passwordStr + "' , password again: '" + passwordAgainStr + "'");
 
-        if (1==1) {
-            goToLogin(getWindow().getDecorView().findViewById(android.R.id.content));
+        if (passwordStr.equals(passwordAgainStr)) {
+            mAuth.createUserWithEmailAndPassword(emailStr, passwordStr).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(LOG_TAG, "User created successfully");
+                        goAndMain(getWindow().getDecorView().findViewById(android.R.id.content));
+                        finish();
+                    } else {
+                        Log.d(LOG_TAG, "User was't created successfully:", task.getException());
+                        Toast.makeText(RegisterActivity.this, "User was't created successfully:", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         }
     }
 }

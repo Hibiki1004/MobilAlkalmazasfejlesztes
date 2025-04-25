@@ -10,20 +10,28 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
 public class LoginActivity extends AppCompatActivity {
     private static final String LOG_TAG = "LoginTag";
 
-    EditText name;
+    EditText email;
     EditText password;
 
     private SharedPreferences preferences;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,15 +48,16 @@ public class LoginActivity extends AppCompatActivity {
             Log.e(LOG_TAG,"Secret not matching");
             finish();
         }
+        mAuth = FirebaseAuth.getInstance();
 
-        name = findViewById(R.id.name);
+        email = findViewById(R.id.email);
         password = findViewById(R.id.password);
 
         password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if (name.getText().toString().isEmpty() || password.getText().toString().isEmpty()) {
+                    if (email.getText().toString().isEmpty() || password.getText().toString().isEmpty()) {
                         return true;
                     } else {
                         Log.i(LOG_TAG, "Login With Done");
@@ -103,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onPause();
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("name", name.getText().toString());
+        editor.putString("name", email.getText().toString());
         editor.putString("password", password.getText().toString());
         editor.apply();
 
@@ -113,15 +122,25 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         Log.i(LOG_TAG,"onDestroy");
     }
 
     public void login(View view) {
-        String NameStr = name.getText().toString();
+        String nameStr = email.getText().toString();
         String passwordStr = password.getText().toString();
-
-        Log.i(LOG_TAG, "Login as: name: '" + NameStr + "' , password: '" + passwordStr + "'");
+        mAuth.signInWithEmailAndPassword(nameStr, passwordStr).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    Log.d(LOG_TAG, "Login done!");
+                    goToMain(getWindow().getDecorView().findViewById(android.R.id.content));
+                    finish();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Invalid email or password!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        Log.i(LOG_TAG, "Login as: name: '" + nameStr + "' , password: '" + passwordStr + "'");
     }
 
     public void goToRegister(View view) {
@@ -132,9 +151,12 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
 
         Log.i(LOG_TAG, "goToRegister");
+        finish();
     }
 
     public void goToMain(View view) {
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
         finish();
 
         Log.i(LOG_TAG, "goToMain");

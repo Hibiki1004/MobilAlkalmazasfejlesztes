@@ -7,4 +7,6 @@
     <string name="passwordAgain">Jelszó újra</string>
     <string name="email">Email cím</string>
     <string name="no">Mégse</string>
+    <string name="singout">Kijelentkezés</string>
+    <string name="fooldal">Főoldal</string>
 </resources>
